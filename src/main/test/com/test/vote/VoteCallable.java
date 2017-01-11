@@ -1,4 +1,4 @@
-package com.test.service;
+package com.test.vote;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -7,22 +7,69 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
-
-public class VoteClient {
-	static String requestUrl="http://nvshen.63.jycsu.com/plugin.php?id=tom_weixin_vote&mod=info&vid=4&tid=";
-	static String Your_Http_Agent_Value="Mozilla/5.0 (iPhone; CPU iPhone OS 5_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Mobile/9B176 MicroMessenger/4.3.2";
-	static String COOKIE = "";  
+public class VoteCallable implements Runnable{
+	private String requestUrl="http://nvshen.63.jycsu.com/plugin.php?id=tom_weixin_vote&mod=info&vid=4&tid=";
+	private String Your_Http_Agent_Value="Mozilla/5.0 (iPhone; CPU iPhone OS 5_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Mobile/9B176 MicroMessenger/4.3.2";
+	private String COOKIE = "";  
+	private int CallNum=0;
+	private int TaskNum=0;
+	
+	VoteCallable(int CallNum,int TaskNum) {
+		this.CallNum=CallNum;
+		this.TaskNum=TaskNum;
+	}
+	
+	@Override
+	public void run() {
+		try {
+			String[] tid={"20","21","22","23","24","25","26","27"};//25
+			for(int i=1;i<CallNum;i++){
+				for(int j=0;j<7;j++){
+				String tptel="131"+getRandomStr(8);
+				String IP=getRandomIp();
+				//获取投票页面数据
+				String RequestStr=HttpRequest(requestUrl+tid[j], "GET", null,"GET",IP);
+				int formhashint=RequestStr.indexOf("name=\"formhash\" value=\"")+23;
+				int tomhashint=RequestStr.indexOf("name=\"tomhash\" value=\"")+22;
+				String formhashStr=RequestStr.substring(formhashint,formhashint+10);
+				formhashStr=formhashStr.substring(0,formhashStr.indexOf("\""));
+				String tomhashStr=RequestStr.substring(tomhashint,tomhashint+10);
+				tomhashStr=tomhashStr.substring(0,tomhashStr.indexOf("\""));
+	//			System.out.println("formhashStr="+formhashStr+";tomhashStr="+tomhashStr);
+				
+				//初始化记录投票
+				String SaveUrl="http://nvshen.63.jycsu.com/plugin.php?id=tom_weixin_vote&mod=save&act=clicks&formhash="+formhashStr+"&vid=4";
+	//			System.out.println("SaveUrl="+SaveUrl);
+				String SaveStr=HttpRequest(SaveUrl, "GET", null,"SET",IP);
+				
+				//开始调用投票页面
+				String voteUrl="http://nvshen.63.jycsu.com/plugin.php?id=tom_weixin_vote&mod=save&tpxm=tom&tptel="+tptel+"&formhash="+formhashStr+"&tomhash="+tomhashStr+"&vid=4&tid="+tid[j]+"&act=tpadd";
+	//			System.out.println("voteUrl="+voteUrl);
+				String RequestStr2=HttpRequest(voteUrl, "GET", null,"SET",IP);
+				Random random = new Random(); 
+				int seconds=random.nextInt(10)*50;
+				System.out.println(TaskNum+"号任务：IP="+IP+";"+RequestStr2+";waiting:"+seconds);
+				Thread.sleep(seconds);
+				}
+			}
+		} catch (ConnectException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	/*
 	 * @param requestMethod 请求方式（GET、POST）
 	 * @param outputStr 提交的数据
 	 * @return JSONObject(通过JSONObject.get(key)的方式获取json对象的属性值)
 	 */
-	public static String HttpRequest(String requestUrl, String requestMethod, String outputStr,String CookIEMod,String IP) throws ConnectException,Exception {
+	private  String HttpRequest(String requestUrl, String requestMethod, String outputStr,String CookIEMod,String IP) throws ConnectException,Exception {
 		String sTr="";
 		StringBuffer buffer = new StringBuffer();
 		try {
@@ -107,7 +154,7 @@ public class VoteClient {
 	  * @param num
 	  * @return
 	  */
-	 public static String getRandomStr(int num){
+	 private  String getRandomStr(int num){
 			
 			String str = "0123456789";
 			Random random = new Random(); 
@@ -120,7 +167,7 @@ public class VoteClient {
 			return strResult;
 	}
 
-	 public static String getRandomIp(){
+	 private  String getRandomIp(){
          
 	        //ip范围
 	        int[][] range = {{607649792,608174079},//36.56.0.0-36.63.255.255
@@ -144,7 +191,7 @@ public class VoteClient {
 	 /*
      * 将十进制转换成ip地址
      */
-    public static String num2ip(int ip) {
+    private  String num2ip(int ip) {
         int [] b=new int[4] ;
         String x = "";
          
@@ -156,47 +203,5 @@ public class VoteClient {
          
         return x; 
      }
-	    
-	public static void main(String[] args) {
-		try {
-			String[] tid={"20","21","22","23","24","26","27"};//25
-			for(int i=1;i<2000;i++){
-				
-				for(int j=0;j<7;j++){
-				String tptel="131"+getRandomStr(8);
-				String IP=getRandomIp();
-				//获取投票页面数据
-				String RequestStr=HttpRequest(requestUrl+tid[j], "GET", null,"GET",IP);
-				int formhashint=RequestStr.indexOf("name=\"formhash\" value=\"")+23;
-				int tomhashint=RequestStr.indexOf("name=\"tomhash\" value=\"")+22;
-				String formhashStr=RequestStr.substring(formhashint,formhashint+10);
-				formhashStr=formhashStr.substring(0,formhashStr.indexOf("\""));
-				String tomhashStr=RequestStr.substring(tomhashint,tomhashint+10);
-				tomhashStr=tomhashStr.substring(0,tomhashStr.indexOf("\""));
-	//			System.out.println("formhashStr="+formhashStr+";tomhashStr="+tomhashStr);
-				
-				//初始化记录投票
-				String SaveUrl="http://nvshen.63.jycsu.com/plugin.php?id=tom_weixin_vote&mod=save&act=clicks&formhash="+formhashStr+"&vid=4";
-	//			System.out.println("SaveUrl="+SaveUrl);
-				String SaveStr=HttpRequest(SaveUrl, "GET", null,"SET",IP);
-				
-				//开始调用投票页面
-				String voteUrl="http://nvshen.63.jycsu.com/plugin.php?id=tom_weixin_vote&mod=save&tpxm=tom&tptel="+tptel+"&formhash="+formhashStr+"&tomhash="+tomhashStr+"&vid=4&tid="+tid[j]+"&act=tpadd";
-	//			System.out.println("voteUrl="+voteUrl);
-				String RequestStr2=HttpRequest(voteUrl, "GET", null,"SET",IP);
-				Random random = new Random(); 
-				int seconds=random.nextInt(10)*5;
-				System.out.println("IP="+IP+";"+RequestStr2+";waiting:"+seconds);
-				Thread.sleep(seconds);
-				}
-			}
-		} catch (ConnectException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+
 }
