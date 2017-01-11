@@ -8,7 +8,7 @@ public class RunTest {
 	public static void main(String[] args) {
 		for(int i=1;i<20;i++){
 			System.out.println("程序开始运行");
-			pool.execute(new VoteCallable(1000, i));
+			pool.execute(new VoteCallable(4000, i));
 			System.out.println("程序结束运行");
 		}
 		pool.shutdown();

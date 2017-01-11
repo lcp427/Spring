@@ -24,9 +24,10 @@ public class VoteCallable implements Runnable{
 	@Override
 	public void run() {
 		try {
-			String[] tid={"20","21","22","23","24","25","26","27"};//25
+			String[] tid={"20","21","22","23","24","26","27"};//25
+			//String[] tid={"23"};//25
 			for(int i=1;i<CallNum;i++){
-				for(int j=0;j<7;j++){
+				for(int j=0;j<tid.length;j++){
 				String tptel="131"+getRandomStr(8);
 				String IP=getRandomIp();
 				//获取投票页面数据
